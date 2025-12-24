@@ -9,7 +9,7 @@ export async function seedReviews(prisma: PrismaClient) {
 
   logger.log('Seeding reviews...');
   for (const review of REVIEWS) {
-    prisma.review.create({
+    await prisma.review.create({
       data: review,
     });
   }

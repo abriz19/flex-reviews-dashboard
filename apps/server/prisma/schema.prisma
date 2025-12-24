@@ -14,3 +14,48 @@ datasource db {
 }
  
 
+model Property {
+  id          String   @id @default(uuid())
+  name        String 
+  listingName String   @unique 
+  slug        String?  @unique 
+
+  reviews     Review[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? 
+
+  @@index([listingName])
+  @@index([createdAt])
+
+  @@map("properties")
+}
+
+model Review {
+  id             String   @id @default(uuid())
+
+  // Relation
+  property       Property @relation(fields: [propertyId], references: [id])
+  propertyId     String
+
+  guestName      String
+  publicReview   String?
+  reviewCategory Json?    // Raw format: [{ "category": "cleanliness", "rating": 10 }, ...]
+  overallRating  Float?
+  type           String   // "host-to-guest" or "guest-to-host"
+  channel        String   
+
+  isApproved     Boolean  @default(false) 
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([propertyId])
+  @@index([isApproved])
+  @@index([createdAt])
+  @@index([overallRating])
+  @@index([channel])
+
+  @@map("reviews")
+}

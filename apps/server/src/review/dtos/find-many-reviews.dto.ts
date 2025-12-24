@@ -4,7 +4,7 @@ import { PaginationDto } from 'src/common/dtos';
 import { ReviewFilterByDto } from './review-filter-by.dto';
 import { ReviewOrderByDto } from './review-order-by.dto';
 
-export class FindReviewsDto extends PaginationDto {
+export class FindManyReviewsDto extends PaginationDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => ReviewFilterByDto)

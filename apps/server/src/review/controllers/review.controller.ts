@@ -1,13 +1,31 @@
-import { Controller, Get, Query, Patch, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Patch,
+  Param,
+  Body,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ReviewsService } from '../services';
+import { FindManyReviewsDto } from '../dtos';
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Get('hostaway')
-  async getHostawayReviews() {
-    return this.reviewsService.getNormalizedReviews();
+  async getHostawayReviews(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    )
+    params: FindManyReviewsDto,
+  ) {
+    return this.reviewsService.getNormalizedReviews(params);
   }
 
   @Get('public')

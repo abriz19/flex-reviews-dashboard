@@ -1,30 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma';
+import { FindManyReviewsDto } from '../dtos';
+import { paginator } from 'src/common';
+import { filterBy, orderBy, searchBy } from 'src/common/helpers';
+import { Prisma, Review } from '@prisma/client';
+import { PaginatedResult } from 'src/common/interfaces/pagination-result';
 
+const SEARCHABLE_FIELDS = ['guestName', 'publicReview'];
 @Injectable()
 export class ReviewsService {
   constructor(private prismaService: PrismaService) {}
 
-  async getNormalizedReviews() {
-    const reviews = await this.prismaService.review.findMany({
+  async getNormalizedReviews(
+    params: FindManyReviewsDto,
+  ): Promise<PaginatedResult<Review>> {
+    const paginatedResult = await paginator(this.prismaService.review, {
       include: { property: true },
-      orderBy: { createdAt: 'desc' },
+      where: {
+        AND: [
+          { OR: searchBy(SEARCHABLE_FIELDS, params.search) },
+          filterBy<Prisma.ReviewWhereInput>(params.filterBy),
+        ],
+      },
+      orderBy: orderBy(params?.orderBy),
+      page: params.page,
+      pageSize: params.pageSize,
     });
-
-    return reviews.map((review) => ({
-      id: review.id,
-      propertyId: review.propertyId,
-      listingName: review.property.listingName,
-      guestName: review.guestName,
-      publicReview: review.publicReview,
-      overallRating: review.overallRating,
-      categories: this.flattenCategories(review.reviewCategory as any[]),
-      channel: review.channel,
-      type: review.type,
-      date: review.createdAt.toISOString().split('T')[0],
-      createdAt: review.createdAt.toISOString().split('T')[0],
-      isApproved: review.isApproved,
-    }));
+    return paginatedResult;
   }
 
   async getPublicReviews(propertyId?: string) {

@@ -19,7 +19,7 @@ export class ReviewOrderByDto {
 
   @IsEnum(OrderDirection)
   @IsOptional()
-  rating: OrderDirection;
+  overallRating: OrderDirection;
 
   @IsEnum(OrderDirection)
   @IsOptional()

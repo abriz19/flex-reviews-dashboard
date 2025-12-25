@@ -1,34 +1,35 @@
 import type { Prisma } from '@prisma/client';
 
+// Properties from mock data - matching frontend mockData.ts
 export const PROPERTIES: Prisma.PropertyCreateInput[] = [
   {
-    name: 'Shoreditch Heights',
-    listingName: '2B N1 A - 29 Shoreditch Heights',
-    slug: 'shoreditch-heights-29',
+    name: 'Central Flat in Spitalfields',
+    listingName: 'Central Flat in Spitalfields',
+    slug: 'central-flat-spitalfields',
   },
   {
-    name: 'Covent Garden Loft',
-    listingName: '1B Central - 12 Neal Street Covent Garden',
-    slug: 'covent-garden-loft-12',
+    name: 'Immaculate 2 Bed Balcony Flat in Fulham',
+    listingName: 'Immaculate 2 Bed Balcony Flat in Fulham',
+    slug: 'immaculate-2-bed-balcony-flat-fulham',
   },
   {
-    name: 'Notting Hill Maisonette',
-    listingName: '2B West - 45 Portobello Road Notting Hill',
-    slug: 'notting-hill-maisonette-45',
+    name: 'Lovely and Relaxing Room in the Heart of Morden',
+    listingName: 'Lovely and Relaxing Room in the Heart of Morden',
+    slug: 'lovely-relaxing-room-morden',
   },
   {
-    name: 'Paris Marais Apartment',
-    listingName: '1B Paris - 18 Rue de Birague Marais',
-    slug: 'paris-marais-18',
+    name: 'Bright Flat in Camberwell',
+    listingName: 'Bright Flat in Camberwell',
+    slug: 'bright-flat-camberwell',
   },
   {
-    name: 'Barcelona Gothic Quarter',
-    listingName: '2B Barcelona - 7 Carrer de la Princesa',
-    slug: 'barcelona-gothic-7',
+    name: 'Charming 2 Bed Flat in the Heart of Camden',
+    listingName: 'Charming 2 Bed Flat in the Heart of Camden',
+    slug: 'charming-2-bed-flat-camden',
   },
   {
-    name: 'Berlin Mitte Studio',
-    listingName: 'Studio Berlin - 88 Rosenthaler Strasse Mitte',
-    slug: 'berlin-mitte-studio-88',
+    name: 'Cosy 2 Bed Apartment in Ealing',
+    listingName: 'Cosy 2 Bed Apartment in Ealing',
+    slug: 'cosy-2-bed-apartment-ealing',
   },
 ];

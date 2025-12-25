@@ -1,8 +1,8 @@
-import { Review } from '@/lib/mockData';
+import { ApiReview } from '@/lib/api';
 
 interface ReviewCardProps {
-  review: Review;
-  onStatusChange?: (reviewId: number, newStatus: 'published' | 'pending' | 'declined') => void;
+  review: ApiReview;
+  onStatusChange?: (reviewId: string, newStatus: 'published' | 'pending' | 'declined') => void;
   showActions?: boolean;
 }
 
@@ -14,16 +14,16 @@ export default function ReviewCard({ review, onStatusChange, showActions = true 
           <div className="flex items-center space-x-4 mb-2">
             <h3 className="text-lg font-semibold text-gray-900">{review.guestName}</h3>
             <span className={`px-2 py-1 rounded text-xs font-medium ${
-              review.status === 'published' ? 'bg-green-100 text-green-800' :
+              (review.status === 'published' || review.isApproved) ? 'bg-green-100 text-green-800' :
               review.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
               'bg-red-100 text-red-800'
             }`}>
-              {review.status}
+              {review.status || (review.isApproved ? 'published' : 'pending')}
             </span>
           </div>
           <p className="text-sm text-gray-600 mb-2">{review.listingName}</p>
           <p className="text-sm text-gray-500">
-            {new Date(review.submittedAt).toLocaleDateString('en-GB', {
+            {new Date(review.submittedAt || review.createdAt).toLocaleDateString('en-GB', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -33,25 +33,36 @@ export default function ReviewCard({ review, onStatusChange, showActions = true 
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          {review.rating && (
+          {(review.rating || review.overallRating) && (
             <div className="flex items-center space-x-1">
-              <span className="text-lg font-semibold text-gray-900">{review.rating}</span>
+              <span className="text-lg font-semibold text-gray-900">
+                {review.rating || review.overallRating}
+              </span>
               <span className="text-yellow-400">⭐</span>
             </div>
           )}
         </div>
       </div>
-      <p className="text-gray-700 mb-4">{review.publicReview}</p>
-      {review.reviewCategory && review.reviewCategory.length > 0 && (
+      <p className="text-gray-700 mb-4">{review.publicReview || 'No review text provided.'}</p>
+      {(review.reviewCategory && review.reviewCategory.length > 0) || review.categories ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-          {review.reviewCategory.map((cat, idx) => (
-            <div key={idx} className="text-sm bg-gray-50 px-3 py-2 rounded">
-              <span className="text-gray-600 capitalize">{cat.category.replace('_', ' ')}: </span>
-              <span className="font-semibold text-gray-900">{cat.rating}/10</span>
-            </div>
-          ))}
+          {review.reviewCategory && review.reviewCategory.length > 0
+            ? review.reviewCategory.map((cat, idx) => (
+                <div key={idx} className="text-sm bg-gray-50 px-3 py-2 rounded">
+                  <span className="text-gray-600 capitalize">{cat.category.replace('_', ' ')}: </span>
+                  <span className="font-semibold text-gray-900">{cat.rating}/10</span>
+                </div>
+              ))
+            : review.categories
+              ? Object.entries(review.categories).map(([category, rating], idx) => (
+                  <div key={idx} className="text-sm bg-gray-50 px-3 py-2 rounded">
+                    <span className="text-gray-600 capitalize">{category.replace('_', ' ')}: </span>
+                    <span className="font-semibold text-gray-900">{rating}/10</span>
+                  </div>
+                ))
+              : null}
         </div>
-      )}
+      ) : null}
       <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
         <span className="text-sm text-gray-600">Channel: {review.channel || 'N/A'}</span>
         <span className="text-gray-300">|</span>

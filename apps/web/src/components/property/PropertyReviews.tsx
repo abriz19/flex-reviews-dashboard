@@ -1,8 +1,8 @@
-import { Review } from "@/lib/mockData";
+import { ApiReview } from "@/lib/api";
 import ReviewCard from "@/components/reviews/ReviewCard";
 
 interface PropertyReviewsProps {
-  reviews: Review[];
+  reviews: ApiReview[];
 }
 
 export default function PropertyReviews({ reviews }: PropertyReviewsProps) {

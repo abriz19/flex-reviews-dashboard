@@ -1,372 +1,292 @@
 import type { Prisma } from '@prisma/client';
 
-export const REVIEWS: Prisma.ReviewCreateInput[] = [
-  // Shoreditch Heights (listingName: "2B N1 A - 29 Shoreditch Heights")
-  {
-    guestName: 'Shane Finkelstein',
-    publicReview:
-      'Shane and family are wonderful! Would definitely host again :)',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'communication', rating: 10 },
-      { category: 'respect_house_rules', rating: 10 },
-    ],
-    overallRating: 10,
-    type: 'host-to-guest',
-    channel: 'Direct',
-    createdAt: new Date('2025-11-15'),
-    isApproved: true,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
-  {
-    guestName: 'Maria Gonzalez',
-    publicReview:
-      'Great location, very stylish apartment. WiFi was a bit slow in the evening.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'communication', rating: 10 },
-      { category: 'check_in', rating: 10 },
-      { category: 'accuracy', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 8 },
-    ],
-    overallRating: 9.3,
-    type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2025-10-20'),
-    isApproved: true,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
-  {
-    guestName: 'James Liu',
-    publicReview:
-      'The shower pressure was very low and the bed was quite firm. Everything else was fine.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 7 },
-      { category: 'communication', rating: 9 },
-      { category: 'check_in', rating: 8 },
-      { category: 'accuracy', rating: 8 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 6 },
-    ],
-    overallRating: 8.0,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2025-09-05'),
-    isApproved: false,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
-  {
-    guestName: 'Rachel Kim',
-    publicReview:
-      'The listing photos were misleading — the second bedroom is very small. Also, no toiletries provided.',
-    reviewCategory: [
-      { category: 'accuracy', rating: 4 },
-      { category: 'cleanliness', rating: 7 },
-      { category: 'value', rating: 5 },
-      { category: 'communication', rating: 8 },
-    ],
-    overallRating: 6.0,
-    type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2024-12-01'),
-    isApproved: false,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
-  {
-    guestName: 'Tom Harrison',
-    publicReview: 'Fantastic stay! Super clean and great communication.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'communication', rating: 10 },
-      { category: 'location', rating: 10 },
-    ],
-    overallRating: 10,
-    type: 'guest-to-host',
-    channel: 'Direct',
-    createdAt: new Date('2025-06-10'),
-    isApproved: true,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
+// Helper function to calculate overall rating from categories
+function calculateOverallRating(
+  categories?: { category: string; rating: number }[],
+): number | null {
+  if (!categories || categories.length === 0) return null;
+  const sum = categories.reduce((acc, cat) => acc + cat.rating, 0);
+  return sum / categories.length;
+}
 
-  // Covent Garden Loft (listingName: "1B Central - 12 Neal Street Covent Garden")
-  {
-    guestName: 'Sophie Martin',
-    publicReview:
-      'Perfect location, spotless, and super responsive host. Felt like home!',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'communication', rating: 10 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 9 },
-    ],
-    overallRating: 9.8,
-    type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2025-12-10'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Central - 12 Neal Street Covent Garden' },
-    },
-  },
-  {
-    guestName: 'Alex Chen',
-    publicReview:
-      'Amazing stay! Right in the heart of London, couldn’t ask for better.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'communication', rating: 10 },
-      { category: 'location', rating: 10 },
-    ],
-    overallRating: 10,
-    type: 'guest-to-host',
-    channel: 'Direct',
-    createdAt: new Date('2025-08-22'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Central - 12 Neal Street Covent Garden' },
-    },
-  },
-  {
-    guestName: 'Emma Wilson',
-    publicReview:
-      'Lovely apartment but the WiFi kept dropping. Host was quick to respond though.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'communication', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 7 },
-    ],
-    overallRating: 8.8,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2024-11-18'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Central - 12 Neal Street Covent Garden' },
-    },
-  },
+// Helper function to infer channel if missing
+function inferChannel(channel?: string): string {
+  if (channel) return channel;
+  return 'Hostaway'; // Default channel
+}
 
-  // Notting Hill Maisonette (listingName: "2B West - 45 Portobello Road Notting Hill")
+// Mock reviews data from frontend - normalized for Prisma
+// Maps listingId to listingName for property connection
+const listingIdToName: Record<number, string> = {
+  253094: 'Central Flat in Spitalfields',
+  253095: 'Immaculate 2 Bed Balcony Flat in Fulham',
+  253096: 'Lovely and Relaxing Room in the Heart of Morden',
+  253097: 'Bright Flat in Camberwell',
+  253098: 'Charming 2 Bed Flat in the Heart of Camden',
+  253099: 'Cosy 2 Bed Apartment in Ealing',
+};
+
+// Raw mock data from frontend
+interface MockReview {
+  id: number;
+  type: 'guest-to-host' | 'host-to-guest';
+  status: 'published' | 'pending' | 'declined';
+  rating: number | null;
+  publicReview: string;
+  reviewCategory?: {
+    category: string;
+    rating: number;
+  }[];
+  submittedAt: string;
+  guestName: string;
+  listingName: string;
+  listingId: number;
+  channel?: string;
+}
+
+const mockReviewsData: MockReview[] = [
   {
-    guestName: 'Emma Thompson',
+    id: 7453,
+    type: 'guest-to-host',
+    status: 'published',
+    rating: 5,
     publicReview:
-      'Beautiful flat, but there was dust under the bed and in corners. Needs deeper cleaning.',
+      'Amazing stay! The flat was exactly as described and in a perfect location. Would definitely stay again!',
     reviewCategory: [
       { category: 'cleanliness', rating: 5 },
-      { category: 'communication', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 7 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 5 },
+      { category: 'location', rating: 5 },
+      { category: 'value', rating: 5 },
     ],
-    overallRating: 7.8,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2025-11-01'),
-    isApproved: false,
-    property: {
-      connect: { listingName: '2B West - 45 Portobello Road Notting Hill' },
-    },
+    submittedAt: '2024-12-15 14:30:00',
+    guestName: 'Sarah Johnson',
+    listingName: 'Central Flat in Spitalfields',
+    listingId: 253094,
+    channel: 'Hostaway',
   },
   {
-    guestName: 'Liam Dubois',
+    id: 7454,
+    type: 'guest-to-host',
+    status: 'published',
+    rating: 4,
     publicReview:
-      'Lovely area, but the kitchen had some old food in the fridge from previous guests.',
+      'Great location and clean space. The only issue was the WiFi was a bit slow, but overall a good experience.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 6 },
-      { category: 'communication', rating: 8 },
-      { category: 'accuracy', rating: 9 },
-      { category: 'location', rating: 10 },
+      { category: 'cleanliness', rating: 5 },
+      { category: 'communication', rating: 4 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 4 },
+      { category: 'location', rating: 5 },
+      { category: 'value', rating: 4 },
     ],
-    overallRating: 8.3,
-    type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2025-07-18'),
-    isApproved: false,
-    property: {
-      connect: { listingName: '2B West - 45 Portobello Road Notting Hill' },
-    },
+    submittedAt: '2024-12-10 09:15:00',
+    guestName: 'Michael Chen',
+    listingName: 'Central Flat in Spitalfields',
+    listingId: 253094,
+    channel: 'Hostaway',
   },
   {
-    guestName: 'Olivia Brown',
+    id: 7455,
+    type: 'guest-to-host',
+    status: 'pending',
+    rating: 5,
     publicReview:
-      'Charming and well-located. Minor cleanliness issues but overall good.',
+      'Perfect stay! Everything was wonderful and the host was very responsive.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 7 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 8 },
+      { category: 'cleanliness', rating: 5 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 5 },
+      { category: 'location', rating: 5 },
+      { category: 'value', rating: 5 },
     ],
-    overallRating: 8.3,
-    type: 'guest-to-host',
-    channel: 'Vrbo',
-    createdAt: new Date('2024-05-30'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '2B West - 45 Portobello Road Notting Hill' },
-    },
+    submittedAt: '2024-12-20 16:45:00',
+    guestName: 'Emma Williams',
+    listingName: 'Immaculate 2 Bed Balcony Flat in Fulham',
+    listingId: 253095,
+    channel: 'Hostaway',
   },
-
-  // Paris Marais Apartment
   {
-    guestName: 'Isabella Rossi',
+    id: 7456,
+    type: 'guest-to-host',
+    status: 'published',
+    rating: 3,
     publicReview:
-      'Charming apartment in the best part of Paris. Host was very helpful with recommendations.',
+      'The flat was okay but could use some updates. Location was good though.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'communication', rating: 10 },
-      { category: 'location', rating: 10 },
+      { category: 'cleanliness', rating: 3 },
+      { category: 'communication', rating: 4 },
+      { category: 'check_in', rating: 4 },
+      { category: 'accuracy', rating: 3 },
+      { category: 'location', rating: 4 },
+      { category: 'value', rating: 3 },
     ],
-    overallRating: 9.7,
-    type: 'guest-to-host',
-    channel: 'Vrbo',
-    createdAt: new Date('2025-06-12'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Paris - 18 Rue de Birague Marais' },
-    },
+    submittedAt: '2024-12-05 11:20:00',
+    guestName: 'David Brown',
+    listingName: 'Immaculate 2 Bed Balcony Flat in Fulham',
+    listingId: 253095,
+    channel: 'Hostaway',
   },
   {
-    guestName: 'Pierre Dubois',
+    id: 7457,
+    type: 'guest-to-host',
+    status: 'declined',
+    rating: 2,
     publicReview:
-      'Très bien situé, propre et confortable. Parfait pour un séjour à Paris!',
+      'Not satisfied with the stay. Multiple issues that were not addressed.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 9 },
+      { category: 'cleanliness', rating: 2 },
+      { category: 'communication', rating: 2 },
+      { category: 'check_in', rating: 3 },
+      { category: 'accuracy', rating: 2 },
+      { category: 'location', rating: 4 },
+      { category: 'value', rating: 2 },
     ],
-    overallRating: 9.7,
-    type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2025-03-20'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Paris - 18 Rue de Birague Marais' },
-    },
+    submittedAt: '2024-11-28 10:00:00',
+    guestName: 'Lisa Anderson',
+    listingName: 'Lovely and Relaxing Room in the Heart of Morden',
+    listingId: 253096,
+    channel: 'Hostaway',
   },
-
-  // Barcelona Gothic Quarter
   {
-    guestName: 'Carlos Sanchez',
+    id: 7458,
+    type: 'guest-to-host',
+    status: 'published',
+    rating: 5,
     publicReview:
-      'Excellent location in the Gothic Quarter. Apartment was clean and modern.',
+      'Absolutely fantastic! The garden was beautiful and the flat was spotless. Highly recommend!',
     reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'communication', rating: 9 },
+      { category: 'cleanliness', rating: 5 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 5 },
+      { category: 'location', rating: 4 },
+      { category: 'value', rating: 5 },
     ],
-    overallRating: 9.3,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2025-08-05'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '2B Barcelona - 7 Carrer de la Princesa' },
-    },
+    submittedAt: '2024-12-18 13:00:00',
+    guestName: 'James Taylor',
+    listingName: 'Lovely and Relaxing Room in the Heart of Morden',
+    listingId: 253096,
+    channel: 'Hostaway',
   },
   {
-    guestName: 'Anna Müller',
-    publicReview: 'Great stay, but air conditioning was weak during heat wave.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 8 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 7 },
-    ],
-    overallRating: 8.3,
+    id: 7459,
     type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2025-07-25'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '2B Barcelona - 7 Carrer de la Princesa' },
-    },
-  },
-
-  // Berlin Mitte Studio
-  {
-    guestName: 'Olaf Schmidt',
+    status: 'published',
+    rating: 4,
     publicReview:
-      'Super central, modern design. Heating was a bit noisy at night.',
+      'Great apartment with modern amenities. The location near London Bridge was perfect for our trip.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 8 },
-      { category: 'communication', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 8 },
+      { category: 'cleanliness', rating: 4 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 4 },
+      { category: 'location', rating: 5 },
+      { category: 'value', rating: 4 },
     ],
-    overallRating: 8.8,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2025-03-20'),
-    isApproved: true,
-    property: {
-      connect: { listingName: 'Studio Berlin - 88 Rosenthaler Strasse Mitte' },
-    },
+    submittedAt: '2024-12-12 08:30:00',
+    guestName: 'Rachel Green',
+    listingName: 'Bright Flat in Camberwell',
+    listingId: 253097,
+    channel: 'Hostaway',
   },
   {
-    guestName: 'Julia Novak',
-    publicReview: 'Perfect for a solo traveler. Clean, quiet, great location.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 9 },
-    ],
-    overallRating: 9.7,
+    id: 7460,
     type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2024-10-15'),
-    isApproved: true,
-    property: {
-      connect: { listingName: 'Studio Berlin - 88 Rosenthaler Strasse Mitte' },
-    },
-  },
-
-  // Additional reviews to reach 40 (mixed across properties)
-  {
-    guestName: 'David Park',
-    publicReview: 'Excellent host, very clean, would stay again!',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 10 },
-      { category: 'communication', rating: 10 },
-      { category: 'location', rating: 9 },
-    ],
-    overallRating: 9.7,
-    type: 'guest-to-host',
-    channel: 'Direct',
-    createdAt: new Date('2025-05-08'),
-    isApproved: true,
-    property: { connect: { listingName: '2B N1 A - 29 Shoreditch Heights' } },
-  },
-  {
-    guestName: 'Nina Patel',
-    publicReview: 'The noise from the street was quite loud at night.',
-    reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'location', rating: 10 },
-      { category: 'value', rating: 6 },
-    ],
-    overallRating: 8.3,
-    type: 'guest-to-host',
-    channel: 'Booking.com',
-    createdAt: new Date('2025-02-14'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Central - 12 Neal Street Covent Garden' },
-    },
-  },
-  {
-    guestName: 'Michael Ross',
+    status: 'pending',
+    rating: 5,
     publicReview:
-      'Everything was perfect except the hot water took long to heat up.',
+      'Perfect for our large family! Spacious, clean, and well-equipped. The host was very accommodating.',
     reviewCategory: [
-      { category: 'cleanliness', rating: 9 },
-      { category: 'communication', rating: 10 },
-      { category: 'value', rating: 8 },
+      { category: 'cleanliness', rating: 5 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 5 },
+      { category: 'location', rating: 4 },
+      { category: 'value', rating: 5 },
     ],
-    overallRating: 9.0,
+    submittedAt: '2024-12-22 15:20:00',
+    guestName: 'Robert Martinez',
+    listingName: 'Charming 2 Bed Flat in the Heart of Camden',
+    listingId: 253098,
+    channel: 'Hostaway',
+  },
+  {
+    id: 7461,
     type: 'guest-to-host',
-    channel: 'Airbnb',
-    createdAt: new Date('2024-09-30'),
-    isApproved: true,
-    property: {
-      connect: { listingName: '1B Paris - 18 Rue de Birague Marais' },
-    },
+    status: 'published',
+    rating: 4,
+    publicReview:
+      'Cosy and comfortable. Great value for money in a nice neighborhood.',
+    reviewCategory: [
+      { category: 'cleanliness', rating: 4 },
+      { category: 'communication', rating: 4 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 4 },
+      { category: 'location', rating: 4 },
+      { category: 'value', rating: 5 },
+    ],
+    submittedAt: '2024-12-08 12:00:00',
+    guestName: 'Amanda White',
+    listingName: 'Cosy 2 Bed Apartment in Ealing',
+    listingId: 253099,
+    channel: 'Hostaway',
+  },
+  {
+    id: 7462,
+    type: 'guest-to-host',
+    status: 'published',
+    rating: 5,
+    publicReview:
+      'Excellent stay! Everything was perfect and the location was ideal for exploring London.',
+    reviewCategory: [
+      { category: 'cleanliness', rating: 5 },
+      { category: 'communication', rating: 5 },
+      { category: 'check_in', rating: 5 },
+      { category: 'accuracy', rating: 5 },
+      { category: 'location', rating: 5 },
+      { category: 'value', rating: 5 },
+    ],
+    submittedAt: '2024-12-14 10:15:00',
+    guestName: 'Thomas Lee',
+    listingName: 'Central Flat in Spitalfields',
+    listingId: 253094,
+    channel: 'Hostaway',
   },
 ];
+
+// Convert mock data to Prisma format with normalization
+export const REVIEWS: Prisma.ReviewCreateInput[] = mockReviewsData.map(
+  (review) => {
+    // Calculate overall rating from categories if not provided
+    const overallRating =
+      review.rating !== null
+        ? review.rating
+        : calculateOverallRating(review.reviewCategory);
+
+    // Infer channel if missing
+    const channel = inferChannel(review.channel);
+
+    // Parse date
+    const createdAt = new Date(review.submittedAt);
+
+    // Map status to isApproved (published = approved, others = not approved)
+    const isApproved = review.status === 'published';
+
+    return {
+      guestName: review.guestName,
+      publicReview: review.publicReview,
+      reviewCategory: review.reviewCategory || [],
+      overallRating: overallRating,
+      type: review.type,
+      channel: channel,
+      createdAt: createdAt,
+      isApproved: isApproved,
+      property: {
+        connect: { listingName: review.listingName },
+      },
+    };
+  },
+);

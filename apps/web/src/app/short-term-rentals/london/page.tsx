@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { apiClient, ApiProperty } from "@/lib/api";
 import SearchBar from "@/components/ui/SearchBar";
 import PropertyCard from "@/components/property/PropertyCard";
+import PropertyMap from "@/components/property/PropertyMap";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 
 export default function ListingsPage() {
@@ -103,25 +104,7 @@ export default function ListingsPage() {
         </div>
 
         <div className="hidden lg:block w-1/3 h-[calc(100vh-300px)] bg-gray-100 relative border-l border-gray-200">
-          <div className="w-full h-full relative">
-            <div className="absolute inset-0 bg-gray-50">
-              <div
-                className="w-full h-full opacity-30"
-                style={{
-                  backgroundImage:
-                    "url(https://maps.googleapis.com/maps/api/staticmap?center=London,UK&zoom=10&size=600x800&key=demo)",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              ></div>
-
-              <div className="absolute top-[45%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
-                <span className="text-gray-700 font-semibold text-lg">
-                  London
-                </span>
-              </div>
-            </div>
-          </div>
+          <PropertyMap properties={properties} />
         </div>
       </div>
 

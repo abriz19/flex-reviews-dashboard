@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export interface ApiReview {
   id: string;
@@ -15,10 +16,10 @@ export interface ApiReview {
   categories?: Record<string, number>;
   overallRating: number | null;
   rating: number | null;
-  type: 'guest-to-host' | 'host-to-guest';
+  type: "guest-to-host" | "host-to-guest";
   channel: string;
   isApproved: boolean;
-  status: 'published' | 'pending' | 'declined';
+  status: "published" | "pending" | "declined";
   createdAt: string;
   updatedAt: string;
   submittedAt: string;
@@ -31,6 +32,14 @@ export interface ApiProperty {
   name: string;
   listingName: string;
   slug: string | null;
+  location?: string | null;
+  pricePerNight?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  maxGuests?: number | null;
+  images?: string[] | null;
+  description?: string | null;
+  amenities?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,33 +62,51 @@ export interface ReviewFilters {
   channel?: string;
   startDate?: string;
   endDate?: string;
-  orderBy?: 'date' | 'rating' | 'property';
-  orderDirection?: 'asc' | 'desc';
+  orderBy?: "date" | "rating" | "property";
+  orderDirection?: "asc" | "desc";
 }
 
 class ApiClient {
-  private async fetch<T>(
-    endpoint: string,
-    options?: RequestInit,
-  ): Promise<T> {
+  private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options?.headers,
       },
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorMessage;
+      } catch {
+        // If not JSON, use the text or default message
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      }
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Handle empty responses
+    const text = await response.text();
+    if (!text) {
+      throw new Error("Empty response from server");
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+    }
   }
 
   async getProperties(): Promise<ApiProperty[]> {
-    return this.fetch<ApiProperty[]>('/properties');
+    return this.fetch<ApiProperty[]>("/properties");
   }
 
   async getProperty(id: string): Promise<ApiProperty> {
@@ -87,21 +114,25 @@ class ApiClient {
   }
 
   async getReviews(
-    filters?: ReviewFilters | any,
+    filters?: ReviewFilters | any
   ): Promise<PaginatedResponse<ApiReview>> {
     const params = new URLSearchParams();
-    
-    if (filters?.page) params.append('page', filters.page.toString());
-    if (filters?.pageSize) params.append('pageSize', filters.pageSize.toString());
-    if (filters?.search) params.append('search', filters.search);
-    
+
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.pageSize)
+      params.append("pageSize", filters.pageSize.toString());
+    if (filters?.search) params.append("search", filters.search);
+
     // Build filterBy object - support both direct filterBy object or individual filters
     const filterBy: any = filters?.filterBy || {};
-    
+
     if (filters?.propertyId && !filterBy.propertyId) {
       filterBy.propertyId = { equals: filters.propertyId };
     }
-    if ((filters?.minRating !== undefined || filters?.maxRating !== undefined) && !filterBy.overallRating) {
+    if (
+      (filters?.minRating !== undefined || filters?.maxRating !== undefined) &&
+      !filterBy.overallRating
+    ) {
       filterBy.overallRating = {};
       if (filters.minRating !== undefined) {
         filterBy.overallRating.gte = filters.minRating;
@@ -124,42 +155,41 @@ class ApiClient {
     }
 
     if (Object.keys(filterBy).length > 0) {
-      params.append('filterBy', JSON.stringify(filterBy));
+      params.append("filterBy", JSON.stringify(filterBy));
     }
 
     // Build orderBy object
     if (filters?.orderBy) {
       const orderBy: any = {};
-      if (filters.orderBy === 'date') {
-        orderBy.createdAt = filters.orderDirection || 'desc';
-      } else if (filters.orderBy === 'rating') {
-        orderBy.overallRating = filters.orderDirection || 'desc';
-      } else if (filters.orderBy === 'property') {
+      if (filters.orderBy === "date") {
+        orderBy.createdAt = filters.orderDirection || "desc";
+      } else if (filters.orderBy === "rating") {
+        orderBy.overallRating = filters.orderDirection || "desc";
+      } else if (filters.orderBy === "property") {
         // For property sorting, we'll sort by property listingName
         // Note: This requires a nested structure which the backend helper handles
-        orderBy.property_listingName = filters.orderDirection || 'asc';
+        orderBy.property_listingName = filters.orderDirection || "asc";
       }
-      params.append('orderBy', JSON.stringify(orderBy));
+      params.append("orderBy", JSON.stringify(orderBy));
     }
 
     const queryString = params.toString();
-    const endpoint = `/reviews/hostaway${queryString ? `?${queryString}` : ''}`;
-    
+    const endpoint = `/reviews/hostaway${queryString ? `?${queryString}` : ""}`;
+
     return this.fetch<PaginatedResponse<ApiReview>>(endpoint);
   }
 
   async getPublicReviews(propertyId?: string): Promise<ApiReview[]> {
-    const params = propertyId ? `?propertyId=${propertyId}` : '';
+    const params = propertyId ? `?propertyId=${propertyId}` : "";
     return this.fetch<ApiReview[]>(`/reviews/public${params}`);
   }
 
   async approveReview(id: string, approved: boolean): Promise<ApiReview> {
     return this.fetch<ApiReview>(`/reviews/${id}/approve`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ approved }),
     });
   }
 }
 
 export const apiClient = new ApiClient();
-

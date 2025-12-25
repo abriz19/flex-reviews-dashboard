@@ -34,5 +34,13 @@ export class PropertyService {
       },
     });
   }
-}
 
+  async findByListingName(listingName: string): Promise<Property | null> {
+    return this.prismaService.property.findFirst({
+      where: {
+        listingName,
+        deletedAt: null,
+      },
+    });
+  }
+}

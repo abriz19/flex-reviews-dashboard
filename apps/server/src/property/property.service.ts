@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma';
 import { Property } from '@prisma/client';
 
@@ -17,13 +17,17 @@ export class PropertyService {
     });
   }
 
-  async findOne(id: string): Promise<Property | null> {
-    return this.prismaService.property.findFirst({
+  async findOne(id: string): Promise<Property> {
+    const property = await this.prismaService.property.findFirst({
       where: {
         id,
         deletedAt: null,
       },
     });
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+    return property;
   }
 
   async findBySlug(slug: string): Promise<Property | null> {

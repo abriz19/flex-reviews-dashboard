@@ -49,7 +49,6 @@ export class ReviewsService {
           }
         }
 
-        // Infer channel if missing
         const channel = review.channel || 'Hostaway';
 
         return {

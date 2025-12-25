@@ -7,6 +7,12 @@ import { Prisma, Review } from '@prisma/client';
 import { PaginatedResult } from 'src/common/interfaces/pagination-result';
 
 const SEARCHABLE_FIELDS = ['guestName', 'publicReview'];
+
+// Type for Review with property relation
+type ReviewWithProperty = Prisma.ReviewGetPayload<{
+  include: { property: true };
+}>;
+
 @Injectable()
 export class ReviewsService {
   constructor(private prismaService: PrismaService) {}
@@ -28,7 +34,7 @@ export class ReviewsService {
     });
 
     // Normalize the reviews: flatten categories, ensure overallRating is calculated
-    const normalizedItems = paginatedResult.items.map((review) => {
+    const normalizedItems = (paginatedResult.items as ReviewWithProperty[]).map((review) => {
       // Calculate overallRating from categories if missing
       let overallRating = review.overallRating;
       if (!overallRating && review.reviewCategory) {

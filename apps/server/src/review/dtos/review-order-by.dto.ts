@@ -19,13 +19,25 @@ export class ReviewOrderByDto {
 
   @IsEnum(OrderDirection)
   @IsOptional()
-  overallRating: OrderDirection;
+  overallRating?: OrderDirection;
 
   @IsEnum(OrderDirection)
   @IsOptional()
-  guestName: OrderDirection;
+  guestName?: OrderDirection;
 
   @IsEnum(OrderDirection)
   @IsOptional()
-  channel: OrderDirection;
+  channel?: OrderDirection;
+
+  // Allow nested property sorting (property_listingName becomes property: { listingName: 'asc' })
+  @IsOptional()
+  property?: {
+    listingName?: OrderDirection;
+    name?: OrderDirection;
+    [key: string]: any;
+  };
+
+  // Allow underscore-separated keys that will be transformed by the helper
+  // This allows property_listingName, property_name, etc.
+  [key: string]: any;
 }

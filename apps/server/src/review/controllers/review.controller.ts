@@ -20,7 +20,7 @@ export class ReviewsController {
       new ValidationPipe({
         transform: true,
         whitelist: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: false, // Allow underscore keys like property_listingName
       }),
     )
     params: FindManyReviewsDto,

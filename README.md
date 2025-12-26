@@ -1,135 +1,306 @@
-# Turborepo starter
+# Flex Living Reviews Dashboard
 
-This Turborepo starter is maintained by the Turborepo core team.
+A comprehensive reviews management system enabling Flex Living property managers to monitor, filter, and approve guest reviews with a clean, intuitive dashboard interface.
 
-## Using this example
+## Project Overview
 
-Run the following command:
+The Flex Living Reviews Dashboard provides property managers with powerful tools to:
 
-```sh
-npx create-turbo@latest
-```
+- **Monitor** review performance across all properties with real-time statistics
+- **Filter & Search** reviews by rating, property, channel, date, and category
+- **Approve/Reject** reviews for public display on property pages
+- **Analyze** trends and recurring issues to improve guest experience
+- **Display** approved reviews on public-facing property detail pages
 
-## What's inside?
+The system integrates with Hostaway review data, normalizes it for consistency, and provides a manager-controlled approval workflow before reviews appear on public property pages.
 
-This Turborepo includes the following packages/apps:
+## Tech Stack
 
-### Apps and Packages
+### Backend
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **NestJS** - Enterprise-grade Node.js framework providing structure, scalability, and TypeScript support
+- **Prisma** - Type-safe ORM with excellent developer experience and migration management
+- **PostgreSQL** - PostgreSQL for local development and production (via `DATABASE_URL`)
+- **Swagger/OpenAPI** - Auto-generated API documentation at `/api/docs`
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Frontend
 
-### Utilities
+- **Next.js 16 (App Router)** - React framework with server components, routing, and optimized performance
+- **Tailwind CSS** - Utility-first CSS for rapid, consistent UI development
+- **Recharts** - Chart library for data visualization in dashboard analytics
+- **TypeScript** - Type safety across the entire stack
 
-This Turborepo has some additional tools already setup for you:
+### Infrastructure
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- **Turborepo** - Monorepo build system for efficient development and deployment
+- **Docker + docker-compose** - Containerization for consistent development and deployment environments
 
-### Build
+## Key Design Decisions
 
-To build all apps and packages, run the following command:
+### Backend Data Normalization
 
-```
-cd my-turborepo
+All Hostaway review data is normalized server-side before API responses:
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+- **Overall Rating Calculation**: Automatically computed as average of category ratings when missing
+- **Category Flattening**: Categories array transformed to object (`{ cleanliness: 5, communication: 4 }`) for easier frontend access
+- **Channel Inference**: Missing channels default to "Hostaway"
+- **Date Standardization**: All dates converted to ISO format
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+**Rationale**: Ensures consistent, predictable data structures across all endpoints, reducing frontend complexity and potential bugs.
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Manager Approval System
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+Reviews use an `isApproved` boolean field for full manager control:
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+- **Pending** reviews require manager approval before public display
+- **Published** reviews appear on public property pages
+- **Declined** reviews remain in system but hidden from public view
 
-### Develop
+**Rationale**: Gives managers complete control over public-facing content, enabling quality control and brand protection.
 
-To develop all apps and packages, run the following command:
+### Hybrid Filtering Strategy
 
-```
-cd my-turborepo
+- **Backend**: Handles pagination, full-text search, complex filters (date ranges, rating ranges, property/channel filters)
+- **Client-side**: Fast UI updates for status and category filters on small datasets
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+**Rationale**: Balances API efficiency with responsive user experience. Backend handles heavy lifting; client-side provides instant feedback.
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+### UI Design Philosophy
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Interface inspired by Flex Living's premium aesthetic:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+- **Minimal white space** for clean, uncluttered layouts
+- **Elegant typography** with clear hierarchy
+- **Subtle shadows** for depth without distraction
+- **Responsive grid** layouts for all screen sizes
+- **No unnecessary colors** - focused, professional palette
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+**Rationale**: Maintains brand consistency with Flex Living's public website while providing powerful functionality.
 
-### Remote Caching
+### Demo Data
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+Seeded **40 realistic mock reviews** across **6 properties** with varied:
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- Ratings (1-5 stars)
+- Statuses (published, pending, declined)
+- Dates (spread across past 3 months)
+- Guest names and authentic review text
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+**Rationale**: Enables comprehensive testing and demonstration without requiring live Hostaway API integration.
 
-```
-cd my-turborepo
+## API Behaviors
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
+### Primary Endpoints
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
+#### `GET /api/reviews/hostaway`
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+**Purpose**: Primary endpoint for dashboard review management (tested endpoint)
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+**Features**:
+
+- Pagination (`page`, `pageSize` - max 100)
+- Full-text search across `guestName` and `publicReview`
+- Advanced filtering via `filterBy` JSON object
+- Sorting via `orderBy` JSON object
+- Returns normalized review data
+
+**Query Parameters**:
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+?page=1&pageSize=25&search=john&filterBy={"propertyId":{"equals":"uuid"},"overallRating":{"gte":4}}&orderBy={"createdAt":"desc"}
 ```
 
-## Useful Links
+**Response**: `PaginatedResponse<Review>` with `items`, `total`, `currentPage`, `pageSize`, `totalPages`
 
-Learn more about the power of Turborepo:
+#### `GET /api/reviews/public?propertyId=:id`
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+**Purpose**: Retrieve approved reviews for public property pages
+
+**Behavior**: Returns only reviews where `isApproved: true`, optionally filtered by property ID
+
+**Response**: `Array<Review>` (normalized)
+
+#### `PATCH /api/reviews/:id/approve`
+
+**Purpose**: Toggle review approval status
+
+**Body**: `{ "approved": boolean }`
+
+**Response**: Updated `Review` object
+
+#### `GET /api/properties`
+
+**Purpose**: Retrieve all properties for listings and detail pages
+
+**Response**: `Array<Property>`
+
+### API Documentation
+
+Interactive Swagger documentation available at **`/api/docs`** when server is running.
+
+All endpoints support JSON query parameters (`filterBy`, `orderBy`) which must be URL-encoded when sent as query strings.
+
+## Google Reviews Integration Findings
+
+### Exploration Summary
+
+Investigated Google Places API for reviews integration to complement Hostaway data.
+
+### Key Findings
+
+1. **Severe Limitations**:
+   - **Maximum 5 reviews per place** - Place Details endpoint returns only 5 reviews
+   - **No pagination** - Cannot retrieve additional reviews beyond the initial 5
+   - **Read-only** - Reviews are algorithmically selected by Google; cannot be managed
+   - **Manual Place ID required** - Each property needs its Google Place ID manually configured
+
+2. **Technical Constraints**:
+   - Requires Google Cloud billing account
+   - Rate limits apply (costs increase with usage)
+   - Reviews may not represent all guest feedback (Google's algorithm selects which reviews to show)
+
+3. **Conclusion**:
+   Google Places API is **not feasible** for a comprehensive reviews management system. The 5-review limit and lack of pagination make it unsuitable for properties with many reviews.
+
+### Recommendations
+
+- **Current Focus**: Hostaway integration with manager approval workflow (implemented)
+- **Future Options**:
+  - Third-party review aggregation services (ReviewPush, Podium, Birdeye)
+  - Manual CSV/JSON import functionality
+  - Web scraping (with proper permissions and legal compliance)
+  - Direct integration with other booking platforms (Airbnb, Booking.com APIs)
+
+## Local Setup Instructions
+
+### Prerequisites
+
+- Node.js 18+ and Yarn
+- PostgreSQL (or SQLite for development)
+- Git
+
+### Step-by-Step Setup
+
+1. **Clone repository**
+
+   ```bash
+   git clone <repository-url>
+   cd flex-reviews-dashboard
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   yarn install
+   ```
+
+3. **Configure environment**
+
+   Create `apps/server/.env`:
+
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5432/flex_reviews?schema=public"
+   # Or for SQLite (development):
+   # DATABASE_URL="file:./dev.db"
+   PORT=5000
+   ```
+
+   Create `apps/web/.env.local`:
+
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   ```
+
+4. **Setup database**
+
+   ```bash
+   cd apps/server
+   yarn prisma db push
+   yarn prisma:seed
+   ```
+
+5. **Start development servers**
+
+   ```bash
+   # From project root
+   yarn dev
+   ```
+
+   This starts both backend (port 5000) and frontend (port 3000) concurrently.
+
+6. **Access application**
+   - **Dashboard**: http://localhost:3000/dashboard
+   - **Public Site**: http://localhost:3000
+   - **API Docs**: http://localhost:5000/api/docs
+   - **API Base**: http://localhost:5000/api
+
+## Docker Setup
+
+For containerized development:
+
+```bash
+docker-compose up --build
+```
+
+The Docker setup automatically:
+
+- Builds backend and frontend containers
+- Runs database migrations
+- Seeds initial data
+- Exposes services on configured ports
+
+## Features Implemented
+
+### Manager Dashboard (`/dashboard`)
+
+- **Overview Section**:
+  - Summary cards (Total Reviews, Published, Pending, Avg Rating)
+  - Property performance table with aggregated statistics
+  - Trends & recurring issues visualization (categories with ratings < 4.0)
+- **Review Management Section**:
+  - Paginated review list with full details
+  - Multi-criteria filtering (status, property, channel, category, date range)
+  - Sorting by date, rating, or property
+  - Approval toggles for each review
+  - Real-time status updates
+
+### Public Property Pages (`/property/[id]`)
+
+- Replicates Flex Living website design
+- Hero image carousel
+- Property description and amenities grid
+- **Approved reviews section** - Only displays reviews with `isApproved: true`
+- Clean, premium layout matching brand aesthetic
+
+### Home Page (`/`)
+
+- Property listings with search functionality
+- Interactive map showing property locations
+- Links to individual property detail pages
+
+## Project Structure
+
+```
+flex-reviews-dashboard/
+├── apps/
+│   ├── server/          # NestJS backend
+│   │   ├── src/
+│   │   │   ├── property/    # Property module
+│   │   │   ├── review/      # Review module (controller, service, DTOs)
+│   │   │   ├── prisma/      # Prisma service
+│   │   │   └── common/      # Shared utilities, DTOs, helpers
+│   │   └── prisma/
+│   │       ├── schema.prisma
+│   │       └── seeders/     # 40 mock reviews + 6 properties
+│   └── web/             # Next.js frontend
+│       └── src/
+│           ├── app/         # Pages (dashboard, property, home)
+│           ├── components/  # React components
+│           ├── hooks/       # Custom hooks
+│           └── lib/         # API client
+└── packages/            # Shared packages (eslint, typescript configs)
+```
+
+## License
+
+Private - Flex Living Internal Use

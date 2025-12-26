@@ -4,7 +4,8 @@ A full-stack application for property managers to assess and manage guest review
 
 ## 🚀 Live Deployment
 
-- **Frontend**: [https://flex-reviews-dashboard-1.onrender.com](https://flex-reviews-dashboard-1.onrender.com)
+- **Frontend (Homepage)**: [https://flex-reviews-dashboard-1.onrender.com](https://flex-reviews-dashboard-1.onrender.com)
+- **Admin Dashboard**: [https://flex-reviews-dashboard-1.onrender.com/dashboard](https://flex-reviews-dashboard-1.onrender.com/dashboard)
 - **Backend API**: [https://flex-reviews-dashboard-u2uk.onrender.com/api](https://flex-reviews-dashboard-u2uk.onrender.com/api)
 
 ## 📋 Project Overview

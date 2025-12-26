@@ -1,306 +1,409 @@
 # Flex Living Reviews Dashboard
 
-A comprehensive reviews management system enabling Flex Living property managers to monitor, filter, and approve guest reviews with a clean, intuitive dashboard interface.
+A full-stack application for property managers to assess and manage guest reviews across multiple properties. Built with modern web technologies in a Turborepo monorepo architecture.
 
-## Project Overview
+## 🚀 Live Deployment
 
-The Flex Living Reviews Dashboard provides property managers with powerful tools to:
+- **Frontend**: [https://flex-reviews-dashboard-1.onrender.com](https://flex-reviews-dashboard-1.onrender.com)
+- **Backend API**: [https://flex-reviews-dashboard-u2uk.onrender.com/api](https://flex-reviews-dashboard-u2uk.onrender.com/api)
 
-- **Monitor** review performance across all properties with real-time statistics
-- **Filter & Search** reviews by rating, property, channel, date, and category
-- **Approve/Reject** reviews for public display on property pages
-- **Analyze** trends and recurring issues to improve guest experience
-- **Display** approved reviews on public-facing property detail pages
+## 📋 Project Overview
 
-The system integrates with Hostaway review data, normalizes it for consistency, and provides a manager-controlled approval workflow before reviews appear on public property pages.
+The Flex Living Reviews Dashboard helps property managers:
+- View and analyze guest reviews across all properties
+- Approve or decline reviews before public display
+- Track performance metrics and trends
+- Filter and search reviews by various criteria
+- Display approved reviews on public property pages
 
-## Tech Stack
+The application simulates integration with Hostaway (a property management system) and provides a complete review management workflow.
 
-### Backend
+## 🛠 Tech Stack
 
-- **NestJS** - Enterprise-grade Node.js framework providing structure, scalability, and TypeScript support
-- **Prisma** - Type-safe ORM with excellent developer experience and migration management
-- **PostgreSQL** - PostgreSQL for local development and production (via `DATABASE_URL`)
-- **Swagger/OpenAPI** - Auto-generated API documentation at `/api/docs`
+| Technology | Purpose | Justification |
+|------------|---------|---------------|
+| **NestJS** | Backend API | Robust, scalable framework with built-in TypeScript support, dependency injection, and excellent Prisma integration |
+| **Next.js 16** | Frontend Framework | Server-side rendering, optimized performance, and seamless React development experience |
+| **Prisma** | ORM | Type-safe database access, migrations, and excellent developer experience |
+| **PostgreSQL** | Database | Relational database for structured review and property data |
+| **Docker** | Containerization | Consistent development and deployment environments |
+| **Turborepo** | Monorepo | Efficient build system for managing multiple packages with shared dependencies |
 
-### Frontend
+## 🏗 Architecture
 
-- **Next.js 16 (App Router)** - React framework with server components, routing, and optimized performance
-- **Tailwind CSS** - Utility-first CSS for rapid, consistent UI development
-- **Recharts** - Chart library for data visualization in dashboard analytics
-- **TypeScript** - Type safety across the entire stack
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (Next.js)                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Dashboard  │  │ Property Page│  │  Listings    │      │
+│  │  (Overview,  │  │  (Public)    │  │   Page       │      │
+│  │   Reviews)   │  │              │  │              │      │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
+└─────────┼──────────────────┼─────────────────┼──────────────┘
+          │                  │                 │
+          │  HTTP Requests   │                 │
+          │  (REST API)      │                 │
+          ▼                  ▼                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Backend (NestJS)                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Controllers:                                        │  │
+│  │  • GET  /api/reviews/hostaway (paginated, filtered) │  │
+│  │  • GET  /api/reviews/public (approved only)        │  │
+│  │  • PATCH /api/reviews/:id/approve                   │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│                          ▼                                   │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Services:                                            │  │
+│  │  • Review normalization                               │  │
+│  │  • Pagination & filtering                             │  │
+│  │  • Approval management                                │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│                          ▼                                   │
+│                    Prisma ORM                                │
+└──────────────────────────┼───────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│              PostgreSQL Database                             │
+│  ┌──────────────┐              ┌──────────────┐            │
+│  │  Properties  │◄─────────────►│   Reviews    │            │
+│  │  (6 seeded)  │              │ (40 seeded)  │            │
+│  └──────────────┘              └──────────────┘            │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Infrastructure
+### Key Data Flows
 
-- **Turborepo** - Monorepo build system for efficient development and deployment
-- **Docker + docker-compose** - Containerization for consistent development and deployment environments
+1. **Fetch Reviews**: Frontend → Backend → Prisma → PostgreSQL → Normalized Response
+2. **Approve Review**: Frontend → PATCH /api/reviews/:id/approve → Update `isApproved` flag
+3. **Public Display**: Property page → GET /api/reviews/public?propertyId=... → Only approved reviews
 
-## Key Design Decisions
+## ✨ Key Features
 
-### Backend Data Normalization
+### Manager Dashboard
+- **Overview Section**: 
+  - Total, published, pending, and declined review counts
+  - Average rating across all reviews
+  - Per-property performance metrics
+  - Category-based issue tracking (ratings < 4)
+- **Review Management**:
+  - Paginated review list (10 per page)
+  - Filter by status, property, channel, category, date range
+  - Sort by date, rating, or property name
+  - Approve/decline reviews with one click
+  - Real-time status updates
 
-All Hostaway review data is normalized server-side before API responses:
+### Public Property Pages
+- Display only approved reviews
+- Property-specific review filtering
+- Clean, user-friendly interface
 
-- **Overall Rating Calculation**: Automatically computed as average of category ratings when missing
-- **Category Flattening**: Categories array transformed to object (`{ cleanliness: 5, communication: 4 }`) for easier frontend access
-- **Channel Inference**: Missing channels default to "Hostaway"
-- **Date Standardization**: All dates converted to ISO format
+### Data Management
+- Seeded database with 40 realistic reviews across 6 properties
+- Review normalization from Hostaway format
+- Support for both `rating` and `overallRating` fields
+- Category-based review analysis
 
-**Rationale**: Ensures consistent, predictable data structures across all endpoints, reducing frontend complexity and potential bugs.
+## 🎯 Key Design and Logic Decisions
 
-### Manager Approval System
+### 1. Backend Normalization
+**Decision**: Normalize review data in the backend service layer.
 
-Reviews use an `isApproved` boolean field for full manager control:
+**Rationale**: 
+- Ensures consistent data structure across all API consumers
+- Handles variations in Hostaway data format (e.g., `rating` vs `overallRating`)
+- Centralizes business logic, making frontend simpler
 
-- **Pending** reviews require manager approval before public display
-- **Published** reviews appear on public property pages
-- **Declined** reviews remain in system but hidden from public view
+**Implementation**: `ReviewsService.getNormalizedReviews()` transforms Prisma models into a consistent API response format.
 
-**Rationale**: Gives managers complete control over public-facing content, enabling quality control and brand protection.
+### 2. Approval System
+**Decision**: Use boolean `isApproved` flag instead of status enum.
 
-### Hybrid Filtering Strategy
+**Rationale**:
+- Simpler data model (boolean vs enum)
+- Clear binary state: approved or not
+- Frontend maps to `published`/`pending`/`declined` for UX
 
-- **Backend**: Handles pagination, full-text search, complex filters (date ranges, rating ranges, property/channel filters)
-- **Client-side**: Fast UI updates for status and category filters on small datasets
+**Implementation**: 
+- Backend: `isApproved: boolean` in database
+- Frontend: Maps `isApproved=true` → `status='published'`, `isApproved=false` → `status='pending'`
 
-**Rationale**: Balances API efficiency with responsive user experience. Backend handles heavy lifting; client-side provides instant feedback.
+### 3. Client-Side Filtering for UX
+**Decision**: Hybrid approach - backend pagination/filtering + client-side category filtering.
 
-### UI Design Philosophy
+**Rationale**:
+- Category data is nested in `reviewCategory` array - complex to filter server-side
+- Client-side filtering provides instant feedback
+- Backend handles heavy filtering (status, property, date range) for performance
 
-Interface inspired by Flex Living's premium aesthetic:
+### 4. Seeded Mock Data
+**Decision**: Pre-populate database with realistic mock data on startup.
 
-- **Minimal white space** for clean, uncluttered layouts
-- **Elegant typography** with clear hierarchy
-- **Subtle shadows** for depth without distraction
-- **Responsive grid** layouts for all screen sizes
-- **No unnecessary colors** - focused, professional palette
+**Rationale**:
+- Enables immediate testing and demos
+- Realistic data structure for development
+- No external API dependencies during development
 
-**Rationale**: Maintains brand consistency with Flex Living's public website while providing powerful functionality.
+**Implementation**: Prisma seed script creates 6 properties and 40 reviews with varied ratings, categories, and statuses.
 
-### Demo Data
+### 5. Pagination Strategy
+**Decision**: Backend pagination with fixed page size (10 reviews per page).
 
-Seeded **40 realistic mock reviews** across **6 properties** with varied:
+**Rationale**:
+- Prevents loading large datasets
+- Better performance and user experience
+- Respects backend validation (max 100 items per request)
 
-- Ratings (1-5 stars)
-- Statuses (published, pending, declined)
-- Dates (spread across past 3 months)
-- Guest names and authentic review text
+## 📡 API Behaviors
 
-**Rationale**: Enables comprehensive testing and demonstration without requiring live Hostaway API integration.
+### Base URL
+```
+Production: https://flex-reviews-dashboard-u2uk.onrender.com/api
+Local: http://localhost:5000/api
+```
 
-## API Behaviors
+### Endpoints
 
-### Primary Endpoints
-
-#### `GET /api/reviews/hostaway`
-
-**Purpose**: Primary endpoint for dashboard review management (tested endpoint)
-
-**Features**:
-
-- Pagination (`page`, `pageSize` - max 100)
-- Full-text search across `guestName` and `publicReview`
-- Advanced filtering via `filterBy` JSON object
-- Sorting via `orderBy` JSON object
-- Returns normalized review data
+#### 1. Get Reviews (Hostaway Format)
+```http
+GET /api/reviews/hostaway
+```
 
 **Query Parameters**:
+- `page` (number, default: 1): Page number
+- `pageSize` (number, 1-100, default: 10): Items per page
+- `search` (string, optional): Search in guestName and publicReview
+- `filterBy` (JSON string, optional): Filter object
+  ```json
+  {
+    "isApproved": { "equals": true },
+    "propertyId": { "equals": "uuid" },
+    "channel": { "equals": "Hostaway" },
+    "overallRating": { "gte": 4, "lte": 5 },
+    "createdAt": { "gte": "2024-01-01T00:00:00Z" }
+  }
+  ```
+- `orderBy` (JSON string, optional): Sort object
+  ```json
+  {
+    "createdAt": "desc",
+    "overallRating": "desc",
+    "guestName": "asc"
+  }
+  ```
 
+**Response**:
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "propertyId": "uuid",
+      "property": {
+        "id": "uuid",
+        "name": "Central Flat in Spitalfields",
+        "listingName": "Central Flat in Spitalfields",
+        "slug": "central-flat-spitalfields"
+      },
+      "guestName": "John Doe",
+      "publicReview": "Great stay!",
+      "reviewCategory": [
+        { "category": "cleanliness", "rating": 5 }
+      ],
+      "overallRating": 4.5,
+      "type": "guest-to-host",
+      "channel": "Hostaway",
+      "isApproved": false,
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "total": 40,
+  "currentPage": 1,
+  "pageSize": 10,
+  "totalPages": 4
+}
 ```
-?page=1&pageSize=25&search=john&filterBy={"propertyId":{"equals":"uuid"},"overallRating":{"gte":4}}&orderBy={"createdAt":"desc"}
+
+#### 2. Get Public Reviews
+```http
+GET /api/reviews/public?propertyId={uuid}
 ```
 
-**Response**: `PaginatedResponse<Review>` with `items`, `total`, `currentPage`, `pageSize`, `totalPages`
+**Query Parameters**:
+- `propertyId` (string, optional): Filter by property ID
 
-#### `GET /api/reviews/public?propertyId=:id`
+**Response**: Array of approved reviews (simplified format for public display)
 
-**Purpose**: Retrieve approved reviews for public property pages
+#### 3. Approve Review
+```http
+PATCH /api/reviews/:id/approve
+Content-Type: application/json
 
-**Behavior**: Returns only reviews where `isApproved: true`, optionally filtered by property ID
+{
+  "approved": true
+}
+```
 
-**Response**: `Array<Review>` (normalized)
+**Response**: Updated review object
 
-#### `PATCH /api/reviews/:id/approve`
+## 🔍 Google Reviews Findings
 
-**Purpose**: Toggle review approval status
+During the assessment, I explored Google Places API for potential integration:
 
-**Body**: `{ "approved": boolean }`
+### Findings
+- **Places API (New)**: Limited to 5 reviews per place, no pagination support
+- **Places API (Legacy)**: Deprecated, not recommended for new projects
+- **Reviews Data**: Requires Place ID, which needs geocoding or manual mapping
 
-**Response**: Updated `Review` object
+### Decision
+**Not implemented** due to:
+1. **Limited Data**: Only 5 reviews per property is insufficient
+2. **No Pagination**: Cannot retrieve historical reviews
+3. **Complexity**: Requires Place ID mapping for each property
+4. **Scope**: Assessment focused on Hostaway integration
 
-#### `GET /api/properties`
+### Alternative Approach
+Focused on Hostaway mock integration, which provides:
+- Complete review history
+- Structured data format
+- Category-based ratings
+- Approval workflow
 
-**Purpose**: Retrieve all properties for listings and detail pages
-
-**Response**: `Array<Property>`
-
-### API Documentation
-
-Interactive Swagger documentation available at **`/api/docs`** when server is running.
-
-All endpoints support JSON query parameters (`filterBy`, `orderBy`) which must be URL-encoded when sent as query strings.
-
-## Google Reviews Integration Findings
-
-### Exploration Summary
-
-Investigated Google Places API for reviews integration to complement Hostaway data.
-
-### Key Findings
-
-1. **Severe Limitations**:
-   - **Maximum 5 reviews per place** - Place Details endpoint returns only 5 reviews
-   - **No pagination** - Cannot retrieve additional reviews beyond the initial 5
-   - **Read-only** - Reviews are algorithmically selected by Google; cannot be managed
-   - **Manual Place ID required** - Each property needs its Google Place ID manually configured
-
-2. **Technical Constraints**:
-   - Requires Google Cloud billing account
-   - Rate limits apply (costs increase with usage)
-   - Reviews may not represent all guest feedback (Google's algorithm selects which reviews to show)
-
-3. **Conclusion**:
-   Google Places API is **not feasible** for a comprehensive reviews management system. The 5-review limit and lack of pagination make it unsuitable for properties with many reviews.
-
-### Recommendations
-
-- **Current Focus**: Hostaway integration with manager approval workflow (implemented)
-- **Future Options**:
-  - Third-party review aggregation services (ReviewPush, Podium, Birdeye)
-  - Manual CSV/JSON import functionality
-  - Web scraping (with proper permissions and legal compliance)
-  - Direct integration with other booking platforms (Airbnb, Booking.com APIs)
-
-## Local Setup Instructions
+## 🚀 Local Setup Instructions
 
 ### Prerequisites
-
 - Node.js 18+ and Yarn
-- PostgreSQL (or SQLite for development)
+- PostgreSQL 14+ (or Docker)
 - Git
 
-### Step-by-Step Setup
+### Steps
 
-1. **Clone repository**
-
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd flex-reviews-dashboard
    ```
 
 2. **Install dependencies**
-
    ```bash
    yarn install
    ```
 
-3. **Configure environment**
+3. **Set up environment variables**
 
-   Create `apps/server/.env`:
+   Create `.env` files in both `apps/server` and `apps/web`:
 
+   **`apps/server/.env`**:
    ```env
-   DATABASE_URL="postgresql://user:password@localhost:5432/flex_reviews?schema=public"
-   # Or for SQLite (development):
-   # DATABASE_URL="file:./dev.db"
+   DATABASE_URL="postgresql://user:password@localhost:5432/flex_reviews"
    PORT=5000
+   FRONTEND_URL="http://localhost:3000"
    ```
 
-   Create `apps/web/.env.local`:
-
+   **`apps/web/.env.local`**:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   NEXT_PUBLIC_API_URL="http://localhost:5000/api"
    ```
 
-4. **Setup database**
-
+4. **Set up database**
    ```bash
    cd apps/server
-   yarn prisma db push
-   yarn prisma:seed
+   npx prisma migrate dev
+   npx prisma db seed
    ```
 
 5. **Start development servers**
-
    ```bash
-   # From project root
+   # From root directory
    yarn dev
    ```
 
-   This starts both backend (port 5000) and frontend (port 3000) concurrently.
+   This starts:
+   - Backend: http://localhost:5000
+   - Frontend: http://localhost:3000
 
-6. **Access application**
-   - **Dashboard**: http://localhost:3000/dashboard
-   - **Public Site**: http://localhost:3000
-   - **API Docs**: http://localhost:5000/api/docs
-   - **API Base**: http://localhost:5000/api
+## 🐳 Docker Setup
 
-## Docker Setup
+### Using Docker Compose
 
-For containerized development:
+1. **Build and start all services**
+   ```bash
+   docker-compose up --build
+   ```
 
-```bash
-docker-compose up --build
-```
+2. **Access services**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000/api
+   - PostgreSQL: localhost:5432
 
-The Docker setup automatically:
+3. **Run migrations and seed**
+   ```bash
+   docker-compose exec server npx prisma migrate deploy
+   docker-compose exec server npx prisma db seed
+   ```
 
-- Builds backend and frontend containers
-- Runs database migrations
-- Seeds initial data
-- Exposes services on configured ports
+### Docker Compose Services
 
-## Features Implemented
+- **web**: Next.js frontend (port 3000)
+- **server**: NestJS backend (port 5000)
+- **postgres**: PostgreSQL database (port 5432)
 
-### Manager Dashboard (`/dashboard`)
+### Notes
+- Database data persists in Docker volume
+- Environment variables are configured in `docker-compose.yml`
+- Services communicate via Docker network (service names as hostnames)
 
-- **Overview Section**:
-  - Summary cards (Total Reviews, Published, Pending, Avg Rating)
-  - Property performance table with aggregated statistics
-  - Trends & recurring issues visualization (categories with ratings < 4.0)
-- **Review Management Section**:
-  - Paginated review list with full details
-  - Multi-criteria filtering (status, property, channel, category, date range)
-  - Sorting by date, rating, or property
-  - Approval toggles for each review
-  - Real-time status updates
-
-### Public Property Pages (`/property/[id]`)
-
-- Replicates Flex Living website design
-- Hero image carousel
-- Property description and amenities grid
-- **Approved reviews section** - Only displays reviews with `isApproved: true`
-- Clean, premium layout matching brand aesthetic
-
-### Home Page (`/`)
-
-- Property listings with search functionality
-- Interactive map showing property locations
-- Links to individual property detail pages
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 flex-reviews-dashboard/
 ├── apps/
-│   ├── server/          # NestJS backend
+│   ├── web/                 # Next.js frontend
 │   │   ├── src/
-│   │   │   ├── property/    # Property module
-│   │   │   ├── review/      # Review module (controller, service, DTOs)
-│   │   │   ├── prisma/      # Prisma service
-│   │   │   └── common/      # Shared utilities, DTOs, helpers
-│   │   └── prisma/
-│   │       ├── schema.prisma
-│   │       └── seeders/     # 40 mock reviews + 6 properties
-│   └── web/             # Next.js frontend
-│       └── src/
-│           ├── app/         # Pages (dashboard, property, home)
-│           ├── components/  # React components
-│           ├── hooks/       # Custom hooks
-│           └── lib/         # API client
-└── packages/            # Shared packages (eslint, typescript configs)
+│   │   │   ├── app/         # Next.js app router
+│   │   │   ├── components/  # React components
+│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   └── lib/         # Utilities, API client
+│   │   └── package.json
+│   └── server/              # NestJS backend
+│       ├── src/
+│       │   ├── review/      # Review module
+│       │   ├── prisma/      # Prisma service
+│       │   └── main.ts      # Application entry
+│       ├── prisma/
+│       │   ├── schema.prisma
+│       │   └── seeders/     # Database seeders
+│       └── package.json
+├── docker-compose.yml
+├── package.json             # Turborepo root
+└── README.md
 ```
 
-## License
+## 🧪 Testing
 
-Private - Flex Living Internal Use
+### Manual Testing Checklist
+- [ ] Dashboard loads with review statistics
+- [ ] Filter reviews by status, property, channel
+- [ ] Pagination works correctly
+- [ ] Approve/decline reviews updates status
+- [ ] Public property page shows only approved reviews
+- [ ] Property performance table displays correctly
+
+## 📝 Notes
+
+- Database is seeded with 40 reviews across 6 properties
+- All reviews start as unapproved (`isApproved: false`)
+- Frontend uses normalized `Review` type (different from backend `ApiReview`)
+- CORS is enabled for `http://localhost:3000` in development
+
+## 📄 License
+
+This project was created for a technical assessment.
+
+---
+
+**Built with ❤️ using NestJS, Next.js, and PostgreSQL**

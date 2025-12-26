@@ -6,7 +6,7 @@ services:
     image: postgres:17-alpine
     container_name: flex-reviews-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-username}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-flex_living}
       PGDATA: /var/lib/postgresql/data/pgdata
@@ -30,7 +30,7 @@ services:
       dockerfile: apps/server/Dockerfile
     container_name: flex-reviews-backend
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-flex_living}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@flex-reviews-postgres:5434/${POSTGRES_DB:-flex_living}?schema=public
       PORT: 5000
       NODE_ENV: production
     ports:

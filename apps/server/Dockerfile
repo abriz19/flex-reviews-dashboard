@@ -72,9 +72,10 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/server/dist ./dist
 
 # Install only production dependencies and Prisma CLI
 RUN yarn install --production --frozen-lockfile --network-timeout 1000000 && \
-    yarn add -D prisma ts-node typescript tsconfig-paths && \
+    yarn add -D prisma@6.19.1 ts-node typescript tsconfig-paths && \
     npx prisma generate && \
     yarn cache clean
+
 
 # Fix permissions for all files
 RUN chown -R nestjs:nodejs /app
